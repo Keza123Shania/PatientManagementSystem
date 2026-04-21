@@ -8,6 +8,6 @@ public class Doctor extends Person{
 
     @Override
     public void performRole() {
-        System.out.println("Doctor " + getName() + " specializes " + specialty + ".");
+        System.out.println("Doctor: " + getName() + " --specialty: " + specialty);
     }
 }

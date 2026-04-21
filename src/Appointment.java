@@ -10,7 +10,7 @@ public class Appointment {
     }
 
     public void displayAppointmentDetails() {
-        System.out.println("Appointment scheduled on " + date + ": " +
-                doctor.getName() + " is seeing " + patient.getName());
+        System.out.println("Appointment scheduled on " + date + ": Doctor " +
+                doctor.getName() + " to see patient " + patient.getName());
     }
 }

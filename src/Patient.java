@@ -8,6 +8,6 @@ public class Patient extends Person{
 
     @Override
     public void performRole(){
-        System.out.println("Patient " + getName() + " is receiving treatment for: " + sickness + ".");
+        System.out.println("Patient: " + getName() + " --receiving treatment for: " + sickness);
     }
 }
