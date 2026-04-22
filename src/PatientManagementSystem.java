@@ -8,48 +8,38 @@ public class PatientManagementSystem {
 
         do {
             try {
-                System.out.println("\n--- Patient Management System ---");
+                System.out.println("\n--- Patient Management Console ---");
                 System.out.println("1. Register Doctor");
                 System.out.println("2. Register Patient");
-                System.out.println("3. View Registered Persons");
-                System.out.println("4. Schedule Appointment");
-                System.out.println("5. View Appointments");
+                System.out.println("3. View Records");
+                System.out.println("4. Book Appointment");
+                System.out.println("5. View All Bookings");
                 System.out.println("0. Exit");
-                System.out.print("\nPlease Select: ");
+                System.out.print("\nWhat would you like to do? ");
 
                 option = scanner.nextInt();
                 scanner.nextLine();
 
                 switch (option) {
                     case 1:
-                        System.out.print("Doctor Name: ");
-                        String dName = scanner.nextLine();
-                        System.out.print("Age: ");
-                        int dAge = scanner.nextInt();
+                        System.out.print("Enter Name: "); String dName = scanner.nextLine();
+                        System.out.print("Age: "); int dAge = scanner.nextInt();
                         scanner.nextLine();
-                        System.out.print("Gender: ");
-                        String gender = scanner.nextLine();
-                        System.out.print("Specialty: ");
-                        String spec = scanner.nextLine();
+                        System.out.print("Gender: "); String gender = scanner.nextLine();
+                        System.out.print("Specialty: "); String spec = scanner.nextLine();
 
                         manager.addDoctor(dName, dAge, gender, spec);
                         break;
 
                     case 2:
-                        // New: Capturing a Unique ID for the Map structure
-                        System.out.print("Assign Patient ID (Unique): ");
-                        String pId = scanner.nextLine();
-                        System.out.print("Patient Name: ");
-                        String pName = scanner.nextLine();
-                        System.out.print("Age: ");
-                        int pAge = scanner.nextInt();
+                        // I added a Patient ID prompt here so we can have a unique key for the Map.
+                        System.out.print("Enter a unique Patient ID: "); String pId = scanner.nextLine();
+                        System.out.print("Name: "); String pName = scanner.nextLine();
+                        System.out.print("Age: "); int pAge = scanner.nextInt();
                         scanner.nextLine();
-                        System.out.print("Gender: ");
-                        String pGender = scanner.nextLine();
-                        System.out.print("Sickness: ");
-                        String sickness = scanner.nextLine();
+                        System.out.print("Gender: "); String pGender = scanner.nextLine();
+                        System.out.print("Sickness: "); String sickness = scanner.nextLine();
 
-                        // Passing ID to manager for Map.put() operation
                         manager.addPatient(pId, pName, pAge, pGender, sickness);
                         break;
 
@@ -58,13 +48,10 @@ public class PatientManagementSystem {
                         break;
 
                     case 4:
-                        // Now we identify WHICH doctor and WHICH patient to link
-                        System.out.print("Enter Doctor Name to assign: ");
-                        String docToAssign = scanner.nextLine();
-                        System.out.print("Enter Patient ID to assign: ");
-                        String patIdToAssign = scanner.nextLine();
-                        System.out.print("Enter Date (e.g: 30/05/2025): ");
-                        String date = scanner.nextLine();
+                        // This case shows how we link different objects together using IDs.
+                        System.out.print("Which doctor is attending? "); String docToAssign = scanner.nextLine();
+                        System.out.print("What is the patient's ID? "); String patIdToAssign = scanner.nextLine();
+                        System.out.print("Enter Date (DD/MM/YYYY): "); String date = scanner.nextLine();
 
                         manager.scheduleAppointment(docToAssign, patIdToAssign, date);
                         break;
@@ -74,20 +61,21 @@ public class PatientManagementSystem {
                         break;
 
                     case 0:
-                        System.out.println("Exiting...");
+                        System.out.println("Shutting down the system...");
                         break;
 
                     default:
-                        System.out.println("Invalid Option.");
+                        System.out.println("That's not a valid option, try again.");
                 }
             } catch (Exception e) {
-                // Meaningful error messages for robustness
-                System.out.println("ALERT: " + e.getMessage());
+                // This keeps the program from crashing if someone types a letter instead of a number.
+                System.out.println("Oops! Something went wrong: " + e.getMessage());
                 if (e instanceof java.util.InputMismatchException) {
-                    scanner.nextLine(); // Clear buffer to prevent infinite loops
+                    scanner.nextLine(); // Clear the wrong input
                 }
             }
         } while (option != 0);
+
         scanner.close();
     }
 }
