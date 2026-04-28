@@ -7,7 +7,6 @@ public class PatientManager {
     private List<Patient> patients = new ArrayList<>();
     private List<Appointment> appointments = new ArrayList<>();
 
-
     private final String DOCTOR_FILE = "doctors.txt";
     private final String PATIENT_FILE = "patients.txt";
     private final String APPOINTMENT_FILE = "appointments.txt";
@@ -17,114 +16,129 @@ public class PatientManager {
     }
 
     public void addDoctor(String name, int age, String gender, String spec) {
-        if (age < 0 || age > 120) {
-            throw new IllegalArgumentException("Invalid age provided for Doctor.");
-        }
+        if (age < 0 || age > 120) throw new IllegalArgumentException("Invalid age.");
+
         Doctor doctor = new Doctor(name, age, gender, spec);
         doctors.add(doctor);
-        saveToFile(DOCTOR_FILE, name + "," + age + "," + gender + "," + spec);
-        System.out.println("Doctor registered and saved successfully.");
+
+
+        String entry = String.format("%-20s | %-3d | %-10s | %-20s", name, age, gender, spec);
+        String header = String.format("%-20s | %-3s | %-10s | %-20s\n%s",
+                "NAME", "AGE", "GENDER", "SPECIALTY",
+                "----------------------------------------------------------------------");
+
+        saveToFileWithHeader(DOCTOR_FILE, header, entry);
+        System.out.println("Doctor registered and logged in system records.");
     }
 
     public void addPatient(String name, int age, String gender, String sickness) {
-        if (age < 0 || age > 120) {
-            throw new IllegalArgumentException("Invalid age provided for Patient.");
-        }
+        if (age < 0 || age > 120) throw new IllegalArgumentException("Invalid age.");
+
         Patient patient = new Patient(name, age, gender, sickness);
         patients.add(patient);
-        saveToFile(PATIENT_FILE, name + "," + age + "," + gender + "," + sickness);
-        System.out.println("Patient registered and saved successfully.");
+
+        String entry = String.format("%-20s | %-3d | %-10s | %-20s", name, age, gender, sickness);
+        String header = String.format("%-20s | %-3s | %-10s | %-20s\n%s",
+                "NAME", "AGE", "GENDER", "SICKNESS/REASON",
+                "----------------------------------------------------------------------");
+
+        saveToFileWithHeader(PATIENT_FILE, header, entry);
+        System.out.println("Patient registered and logged in system records.");
     }
 
     public void scheduleAppointment(String date, int docIdx, int patIdx) throws PatientSystemException {
-        if (docIdx < 0 || docIdx >= doctors.size() || patIdx < 0 || patIdx >= patients.size()) {
-            throw new SchedulingException("Invalid Selection: Choose existing Doctor and Patient indices.");
+
+        int dIndex = docIdx - 1;
+        int pIndex = patIdx - 1;
+
+        if (dIndex < 0 || dIndex >= doctors.size() || pIndex < 0 || pIndex >= patients.size()) {
+            throw new SchedulingException("Selection Out of Bounds: Please use the numbers shown in the records list.");
         }
 
-        Doctor doc = doctors.get(docIdx);
-        Patient pat = patients.get(patIdx);
+        Doctor doc = doctors.get(dIndex);
+        Patient pat = patients.get(pIndex);
         Appointment appt = new Appointment(doc, pat, date);
         appointments.add(appt);
 
+        String entry = String.format("%-15s | Dr. %-15s | Patient: %-15s", date, doc.getName(), pat.getName());
+        String header = String.format("%-15s | %-19s | %-15s\n%s",
+                "DATE", "DOCTOR", "PATIENT",
+                "----------------------------------------------------------------------");
 
-        saveToFile(APPOINTMENT_FILE, date + "," + doc.getName() + "," + pat.getName());
-        System.out.println("Appointment scheduled and saved successfully!");
+        saveToFileWithHeader(APPOINTMENT_FILE, header, entry);
+        System.out.println("Appointment successfully scheduled.");
     }
 
     public void viewRecords() throws PatientSystemException {
         if (doctors.isEmpty() && patients.isEmpty()) {
-            throw new PatientSystemException("Records Empty: No Doctors or Patients found.");
+            throw new PatientSystemException("File Empty: No records found.");
         }
-        System.out.println("\n--- Registered Doctors ---");
+
+        System.out.println("\n--- MEDICAL STAFF DIRECTORY ---");
         for (int i = 0; i < doctors.size(); i++) {
-            System.out.print("[" + i + "] ");
+            System.out.print("[" + (i + 1) + "] ");
             doctors.get(i).performRole();
         }
-        System.out.println("\n--- Registered Patients ---");
+
+        System.out.println("\n--- REGISTERED PATIENTS ---");
         for (int i = 0; i < patients.size(); i++) {
-            System.out.print("[" + i + "] ");
+            System.out.print("[" + (i + 1) + "] ");
             patients.get(i).performRole();
         }
     }
 
     public void viewAppointments() throws PatientSystemException {
         if (appointments.isEmpty()) {
-            throw new SchedulingException("No appointments found in the system.");
+            throw new SchedulingException("No upcoming appointments scheduled.");
         }
-        System.out.println("\n--- All Appointments ---");
+        System.out.println("\n--- MASTER APPOINTMENT SCHEDULE ---");
         for (Appointment a : appointments) {
             a.displayAppointmentDetails();
         }
     }
 
-
-
-    private void saveToFile(String filename, String data) {
+    private void saveToFileWithHeader(String filename, String header, String data) {
+        File file = new File(filename);
+        boolean isNew = !file.exists() || file.length() == 0;
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true))) {
+            if (isNew) {
+                writer.write(header);
+                writer.newLine();
+            }
             writer.write(data);
             writer.newLine();
         } catch (IOException e) {
-            System.err.println("Critical Error: Could not save to " + filename);
+            System.err.println("File Error: " + e.getMessage());
         }
     }
 
     private void loadData() {
-        loadDoctors();
-        loadPatients();
+        loadSimple(DOCTOR_FILE, "doctor");
+        loadSimple(PATIENT_FILE, "patient");
     }
 
-    private void loadDoctors() {
-        File file = new File(DOCTOR_FILE);
+    private void loadSimple(String filename, String type) {
+        File file = new File(filename);
         if (!file.exists()) return;
-
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
+            int lineCount = 0;
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 4) {
-                    doctors.add(new Doctor(parts[0], Integer.parseInt(parts[1]), parts[2], parts[3]));
+                lineCount++;
+                if (lineCount <= 2) continue;
+
+                String[] parts = line.split("\\|");
+                if (parts.length >= 4) {
+                    String name = parts[0].trim();
+                    int age = Integer.parseInt(parts[1].trim());
+                    String gender = parts[2].trim();
+                    String info = parts[3].trim();
+
+                    if (type.equals("doctor")) doctors.add(new Doctor(name, age, gender, info));
+                    else patients.add(new Patient(name, age, gender, info));
                 }
             }
-        } catch (IOException | NumberFormatException e) {
-            System.out.println("Error loading doctor data.");
-        }
-    }
-
-    private void loadPatients() {
-        File file = new File(PATIENT_FILE);
-        if (!file.exists()) return;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 4) {
-                    patients.add(new Patient(parts[0], Integer.parseInt(parts[1]), parts[2], parts[3]));
-                }
-            }
-        } catch (IOException | NumberFormatException e) {
-            System.out.println("Error loading patient data.");
-        }
+        } catch (Exception ignored) {}
     }
 }

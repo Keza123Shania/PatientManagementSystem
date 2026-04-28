@@ -1,0 +1,3 @@
+NAME                 | AGE | GENDER     | SICKNESS/REASON     
+----------------------------------------------------------------------
+Ineza                | 3   | Male       | cough               
