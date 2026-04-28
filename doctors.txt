@@ -1,0 +1,3 @@
+NAME                 | AGE | GENDER     | SPECIALTY           
+----------------------------------------------------------------------
+Ishimwe Bonne        | 56  | female     | ophtamology         
